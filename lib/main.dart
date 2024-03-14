@@ -8,10 +8,6 @@ Future<void> main() async {
   // Register SharedPreferencesPlugin only once
   await SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
-    SystemUiOverlay.top,
-    SystemUiOverlay.bottom,
-  ]);
   runApp(const MyApp());
 }
 

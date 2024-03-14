@@ -1,18 +1,13 @@
 import 'dart:convert';
-//import 'dart:typed_data';
 
-//import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:footer/footer.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-//import 'package:shared_preferences/shared_preferences.dart';
-//import 'package:usb_serial/usb_serial.dart';
 
 
 import '../API/apiservice.dart';
-import '../Models/models.dart';
 import '../Z100 SDK/z100sdk.dart';
 
 class UIScreen extends StatefulWidget {
@@ -24,12 +19,11 @@ class UIScreen extends StatefulWidget {
 
 class _UIScreenState extends State<UIScreen> {
   final ApiService _apiService = ApiService();
-  //platform = MethodChannel('your_channel_name');
+  bool isFullScreen = false;
 
   @override
   void initState() {
     super.initState();
-    // Call initSdk method here
     initSdk();
   }
 
@@ -41,11 +35,15 @@ class _UIScreenState extends State<UIScreen> {
     }
   }
 
+  IconData _getIcon() {
+    return isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen;
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    bool isFullScreen = false;
+    double paddingValue = screenWidth * 0.06;
 
     return Scaffold(
       appBar: PreferredSize(
@@ -54,57 +52,44 @@ class _UIScreenState extends State<UIScreen> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: Colors.grey, // Specify your desired border color here
-                width: 1.0, // Specify the width of the border
+                color: Colors.grey,
+                width: 1.0,
               ),
             ),
           ),
           child: AppBar(
             backgroundColor: Colors.white,
             shadowColor: Colors.black26,
-            /*title: InkWell(
-            onTap: () {
-          // Toggle fullscreen mode
-          setState(() {
-            isFullScreen = !isFullScreen;
-          });
-
-          // Toggle system UI mode
-          if (isFullScreen) {
-            SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-          } else {
-            SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
-              SystemUiOverlay.top,
-              SystemUiOverlay.bottom,
-            ]);
-          }
-              },
-              child:*/ title: Image.asset(
-            'Assets/TQLogo.png',
-            height: screenHeight * 0.1,
-            width: screenWidth * 0.2,
+            title: Padding(
+            padding: EdgeInsets.only(left: paddingValue),
+            child: Image.asset(
+              'Assets/TQLogo.png',
+              height: screenHeight * 0.07,
+              width: screenWidth * 0.15,
+            ),
           ),
             //),
              actions: [
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0,bottom: 8.0,left: 8.0,right: 20.0),
-                child: IconButton(
-                  icon: Icon(isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen),
-                  onPressed: () {
-                    setState(() {
-                      isFullScreen = !isFullScreen;
-                    });
-                    if (isFullScreen) {
-                      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-                    } else {
-                      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
-                        SystemUiOverlay.top,
-                        SystemUiOverlay.bottom,
-                      ]);
-                    }
-                  },
-                ),
-              ),
+               Padding(
+                 padding: EdgeInsets.only(right: paddingValue+2),
+                 child: Visibility(
+                   visible: !isFullScreen,
+                   child: Container(
+                     child: IconButton(
+                       icon: Icon(_getIcon()),
+                       onPressed: () {
+                         setState(() {
+                           isFullScreen = true;
+                           print('isFullScreen: $isFullScreen');
+                           if (isFullScreen) {
+                             SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+                           }
+                         });
+                       },
+                     ),
+                   ),
+                 ),
+               ),
             ],
           ),
         ),
@@ -194,11 +179,6 @@ class _UIScreenState extends State<UIScreen> {
                                 /*SharedPreferences prefs =
                                 await SharedPreferences.getInstance();
                                 String companyName = prefs.getString('companyName') ?? '';*/
-                                /*const snackBar = SnackBar(
-                                  content: Text('Printing'),
-                                );
-                                ScaffoldMessenger.of(context).showSnackBar(snackBar);*/
-                                //final companyName = companyData['name'];
                                 final ZCSPosSdk zcsPosSdk = ZCSPosSdk();
                                 await zcsPosSdk.printReceipt(context, '$Token', '$Time', '$nameEn', '$nameBn', '$companyName');
                                 /*await zcsPosSdk.printReceipt(context, '$Token', '$Time', '$nameEn', '$nameBn', '$companyName') .then((_) {
@@ -215,8 +195,6 @@ class _UIScreenState extends State<UIScreen> {
                                     );
                                   },
                                 );
-                                //printReceipt(Token, Time, nameEn, nameBn, companyName);
-
                               } else {
                                 print('Failed to fetch data: ${response.statusCode}');
                               }
@@ -226,7 +204,7 @@ class _UIScreenState extends State<UIScreen> {
                               child: Text(
                                 '$nameEn ($nameBn)',
                                 style: const TextStyle(
-                                  fontSize: 25, // Adjust font size as needed
+                                  fontSize: 25,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
@@ -245,22 +223,14 @@ class _UIScreenState extends State<UIScreen> {
         ),
       ),
       bottomNavigationBar: Container(
-        height: screenHeight*0.075, // Set the desired height
+        height: screenHeight*0.075,
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: Colors.grey, // Adjust the color as needed
-              width: 1.0, // Adjust the width as needed
+              color: Colors.grey,
+              width: 1.0,
             ),
           ),
-          /*boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2), // Adjust shadow color and opacity as needed
-              spreadRadius: 1, // Adjust spread radius
-              blurRadius: 5, // Adjust blur radius
-              offset: Offset(0, -3), // Adjust shadow offset
-            ),
-          ],*/
         ),
         child: Footer(
           backgroundColor: Colors.grey[200],
@@ -337,17 +307,20 @@ class _UIScreenState extends State<UIScreen> {
                 Navigator.of(context).pop();
               },
               style: ButtonStyle(
-                textStyle: MaterialStateProperty.all(
-                  TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+                backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                        (Set<MaterialState> states) {
+                      return Theme.of(context).colorScheme.primary;
+                    }),
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10), // Add a border for visibility
                   ),
                 ),
               ),
               child: Text(
                 'OK',
                 style: TextStyle(
+                  fontSize: 25,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -358,169 +331,4 @@ class _UIScreenState extends State<UIScreen> {
       ],
     );
   }
-
- /* // Method to retrieve company name from SharedPreferences
-  Future<String?> getCompanyName() async {
-    final company = await ApiService().getCompanyFromPrefs();
-    print(company?.name);
-    return company?.name; // Assuming the company name is stored in a property called 'name'
-  }*/
-
-  // Method to print the receipt
-  /*Future<void> printReceipt(String token, String time, String nameEn, String nameBn, String companyName) async {
-    //final companyName = await getCompanyName();
-
-    // Call the printReceipt method from the ZCSPrinter class
-    await ZCSPrinter.printReceipt(token, time, nameEn, nameBn, companyName);
-  }*/
-
-/*  Future<void> _printData(String token, String time, String nameEn, String nameBn) async {
-    try {
-      PrinterDiscovery.discoverPrinters();
-      *//*final usbConnection = UsbConnection(context);
-      await usbConnection.init();
-      final ticket = await testTicket(token, time, nameEn, nameBn);
-      await usbConnection.sendData(Uint8List.fromList(ticket));
-      await usbConnection.close();*//*
-      // Generate the receipt content
-      final List<int> ticket = await testTicket(token, time, nameEn, nameBn);
-
-      // Print directly to the built-in thermal printer
-      // Replace the following line with the method to print to the built-in printer
-      print('Printing receipt: $ticket');
-    } catch (e) {
-      print('Error printing: $e');
-    }
-  }
-
-  Future<List<int>> testTicket(String token, String time, String nameEn, String nameBn) async {
-    List<int> bytes = [];
-    // Using default profile
-    final profile = await CapabilityProfile.load();
-    final generator = Generator(PaperSize.mm80, profile);
-
-    final Company? company = await ApiService().getCompanyFromPrefs();
-    if (company != null) {
-      final String companyName = company.name;
-      bytes += generator.text('$companyName\n',
-          styles: PosStyles(
-            height: PosTextSize.size2,
-            width: PosTextSize.size2,
-          ));
-    }
-    bytes += generator.text('Token No: $token\n',
-        styles: PosStyles(
-          height: PosTextSize.size6,
-          width: PosTextSize.size6,
-        ));
-    bytes += generator.text('Date and Time: $time\n',
-        styles: PosStyles(
-          height: PosTextSize.size2,
-          width: PosTextSize.size2,
-        ));
-    bytes += generator.text('Developed by Touch and Solve\n\n');
-
-    bytes += generator.cut();
-
-    return bytes;
-  }
 }
-
-const String _channelName = 'printerDiscoveryChannel';
-const String _discoverPrintersMethod = 'discoverPrinters';
-
-class PrinterInfo {
-  final String name;
-  final String ipAddress;
-
-  PrinterInfo({required this.name, required this.ipAddress});
-
-  factory PrinterInfo.fromMap(Map<dynamic, dynamic> map) {
-    return PrinterInfo(
-      name: map['name'],
-      ipAddress: map['ipAddress'],
-    );
-  }
-}
-
-class PrinterDiscovery {
-  static const MethodChannel _channel = MethodChannel(_channelName);
-
-  static Future<List<PrinterInfo>> discoverPrinters() async {
-    try {
-      final List<dynamic> printerData = await _channel.invokeMethod(_discoverPrintersMethod);
-      return printerData.map((data) => PrinterInfo.fromMap(data)).toList();
-    } on PlatformException catch (e) {
-      print("Failed to discover printers: '${e.message}'.");
-      return [];
-    }
-  }*/
-}
-
-/*class UsbConnection {
-  final BuildContext context;
-
-  UsbConnection(this.context);
-
-  Future<void> init() async {
-    try {
-      // Initialize USB connection (platform-specific code)
-      const snackBar = SnackBar(
-        content: Text('Preparing USB Connection/Start'),
-      );
-      ScaffoldMessenger.of(context as BuildContext).showSnackBar(snackBar);
-      const MethodChannel _channel = MethodChannel('usb_printer_channel');
-      const snackBar2 = SnackBar(
-        content: Text('Invoking USB Connection'),
-      );
-      ScaffoldMessenger.of(context as BuildContext).showSnackBar(snackBar2);
-      await _channel.invokeMethod('initUsbConnection');
-    } catch (e) {
-      const snackBar3 = SnackBar(
-        content: Text('Failed to Connect USB'),
-      );
-      ScaffoldMessenger.of(context as BuildContext).showSnackBar(snackBar3);
-      throw Exception('Failed to initialize USB connection: $e');
-    }
-  }
-
-  Future<void> sendData(Uint8List data) async {
-    try {
-      // Send data to USB printer (platform-specific code)
-      const snackBar4 = SnackBar(
-        content: Text('Preparing USB Connection/Data'),
-      );
-      ScaffoldMessenger.of(context as BuildContext).showSnackBar(snackBar4);
-      const MethodChannel _channel = MethodChannel('usb_printer_channel');
-      const snackBar5 = SnackBar(
-        content: Text('Sending Data to USB Printer'),
-      );
-      ScaffoldMessenger.of(context as BuildContext).showSnackBar(snackBar5);
-      await _channel.invokeMethod('sendDataToUsbPrinter', {'data': data});
-    } catch (e) {
-      const snackBar6 = SnackBar(
-        content: Text('Failed to send Data to USB Printer'),
-      );
-      ScaffoldMessenger.of(context as BuildContext).showSnackBar(snackBar6);
-      throw Exception('Failed to send data to USB printer: $e');
-    }
-  }
-
-  Future<void> close() async {
-    try {
-      // Close USB connection (platform-specific code)
-      const snackBar7 = SnackBar(
-        content: Text('Preparing USB Connection/Close'),
-      );
-      ScaffoldMessenger.of(context as BuildContext).showSnackBar(snackBar7);
-      const MethodChannel _channel = MethodChannel('usb_printer_channel');
-      await _channel.invokeMethod('closeUsbConnection');
-    } catch (e) {
-      const snackBar8 = SnackBar(
-        content: Text('Failed to close USB Connection'),
-      );
-      ScaffoldMessenger.of(context as BuildContext).showSnackBar(snackBar8);
-      throw Exception('Failed to close USB connection: $e');
-    }
-  }
-}*/

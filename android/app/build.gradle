@@ -68,7 +68,6 @@ flutter {
 }
 
 dependencies {
-    implementation ("com.sunmi:printerlibrary:1.0.22")
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation files('libs/SmartPos_1.8.1_R231213.jar')
     implementation files('libs/core-3.2.1.jar')

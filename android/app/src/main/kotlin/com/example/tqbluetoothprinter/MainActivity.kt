@@ -101,31 +101,32 @@ class MainActivity : FlutterActivity() {
                 format.setAli(Layout.Alignment.ALIGN_CENTER);
                 format.setStyle(PrnTextStyle.BOLD);
                 format.setFont(PrnTextFont.CUSTOM);
-                mPrinter!!.setPrintAppendString("$nameEn  $nameBn", format);
+                mPrinter!!.setPrintAppendString("$nameEn", format);
+                format.setTextSize(30);
+                format.setAli(Layout.Alignment.ALIGN_CENTER);
+                format.setStyle(PrnTextStyle.BOLD);
+                format.setFont(PrnTextFont.CUSTOM);
+                mPrinter!!.setPrintAppendString("$nameBn", format);
                 format.setTextSize(25);
                 format.setAli(Layout.Alignment.ALIGN_CENTER);
                 format.setStyle(PrnTextStyle.BOLD);
                 format.setFont(PrnTextFont.CUSTOM);
                 mPrinter!!.setPrintAppendString("Developed by Touch and Solve",format);
                 mPrinter.setPrintAppendString(" ", format);
-                mPrinter.setPrintAppendString(" ", format);
                 mPrinter!!.setPrintAppendString("Thank You",format);
                 mPrinter.setPrintAppendString(" ", format);
                 mPrinter.setPrintAppendString(" ", format);
-                cutPaper()
                 mPrinter.setPrintAppendString(" ", format);
                 mPrinter.setPrintAppendString(" ", format);
-                // Add more receipt content if needed...
 
                 printStatus = mPrinter!!.setPrintStart();
                 if (printStatus == SdkResult.SDK_OK) {
                     GlobalScope.launch {
-                        delay(4000) // This suspends the coroutine for 4 seconds
+                        delay(500)
                         cutPaper()
                     }
                     return true
                 } else {
-                    // Printing failed
                     return false
                 }
                 return true
@@ -136,7 +137,6 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    //@Suppress("UNREACHABLE_CODE")
     private fun cutPaper() {
         try {
             val printStatus = mPrinter!!.getPrinterStatus()
