@@ -20,6 +20,7 @@ class UIScreen extends StatefulWidget {
 class _UIScreenState extends State<UIScreen> {
   final ApiService _apiService = ApiService();
   bool isFullScreen = false;
+  int isLoadingIndex = -1;
 
   @override
   void initState() {
@@ -143,9 +144,6 @@ class _UIScreenState extends State<UIScreen> {
                   if (snapshot.hasError || !snapshot.hasData) {
                     return Center(child: Text('Error: ${snapshot.error ?? "No data"}'));
                   }
-                  /*if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  }*/
                   final String companyName = snapshot.data!['company']?.name ?? '';
                   final List<dynamic> categoriesData = snapshot.data!['categories'] ?? [];
 
@@ -153,67 +151,73 @@ class _UIScreenState extends State<UIScreen> {
                     children: categoriesData.map<Widget>((category) {
                       final String nameEn = category.nameEn;
                       final String nameBn = category.nameBn;
-                      return Column(
-                        children: [
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              fixedSize: Size(screenWidth * 0.8, screenHeight * 0.1),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ),
-                            onPressed: () async {
-                              final categoryID = category.id;
-                              final url = 'https://tqueue.touchandsolve.com/api/create-token?id=$categoryID';
-                              final response = await http.get(Uri.parse(url));
+                          return StatefulBuilder(
+                            builder: (context, setState) {
+                                return Column(
+                                  children: [
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Theme.of(context).colorScheme.primary,
+                                        fixedSize: Size(screenWidth * 0.8, screenHeight * 0.1),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                      ),
+                                      onPressed: () async {
+                                        setState(() {
+                                          isLoadingIndex =
+                                              categoriesData.indexOf(
+                                                  category);
+                                          showLoadingOverlay(context);
+                                        });
+                                        final int categoryID = category.id;
+                                        final url = 'https://touch-queue.com/api/create-token?id=$categoryID';
+                                        final response = await http.get(Uri.parse(url));
 
-                              if (response.statusCode == 200) {
-                                final responseData = json.decode(response.body);
-                                print(responseData);
-                                final data = responseData['data'];
-                                final Token = data['token'];
-                                final Time = data['time'];
-                                print('Token: $Token, Time and Date: $Time');
+                                        if (response.statusCode == 200) {
+                                          final responseData = json.decode(response.body);
+                                          print(responseData);
+                                          final data = responseData['data'];
+                                          final Token = data['token'];
+                                          final Time = data['time'];
+                                          print('Token: $Token, Time and Date: $Time');
 
-                                /*SharedPreferences prefs =
-                                await SharedPreferences.getInstance();
-                                String companyName = prefs.getString('companyName') ?? '';*/
-                                final ZCSPosSdk zcsPosSdk = ZCSPosSdk();
-                                await zcsPosSdk.printReceipt(context, '$Token', '$Time', '$nameEn', '$nameBn', '$companyName');
-                                /*await zcsPosSdk.printReceipt(context, '$Token', '$Time', '$nameEn', '$nameBn', '$companyName') .then((_) {
-                                  const snackBar2 = SnackBar(
-                                    content: Text('Printing Complete'),
-                                  );
-                                  ScaffoldMessenger.of(context).showSnackBar(snackBar2);
-                                });*/
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return Center(
-                                      child: buildAlertDialog(Token, Time, '$nameEn ($nameBn)'),
-                                    );
-                                  },
+                                          final ZCSPosSdk z100PosSdk = ZCSPosSdk();
+                                          await z100PosSdk.printReceipt(context, '$Token', '$Time', '$nameEn', '$nameBn', '$companyName');
+
+                                          showDialog(
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (BuildContext context) {
+                                              return Center(
+                                                child: buildAlertDialog(Token, Time, '$nameEn ($nameBn)'),
+                                              );
+                                            },
+                                          );
+                                        } else {
+                                          print('Failed to fetch data: ${response.statusCode}');
+                                        }
+                                        setState(() {
+                                          isLoadingIndex = -1;
+                                        });
+                                      },
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          '$nameEn ($nameBn)',
+                                          style: const TextStyle(
+                                            fontSize: 25,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: screenHeight * 0.01),
+                                  ],
                                 );
-                              } else {
-                                print('Failed to fetch data: ${response.statusCode}');
-                              }
-                            },
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                '$nameEn ($nameBn)',
-                                style: const TextStyle(
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: screenHeight * 0.01),
-                        ],
-                      );
+                            }
+                          );
                     }).toList(),
                   );
                 },
@@ -251,28 +255,27 @@ class _UIScreenState extends State<UIScreen> {
 
   Widget buildAlertDialog(String token, String time, String name) {
     return AlertDialog(
+      iconPadding: EdgeInsets.only(top: 15),
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
-      contentPadding: EdgeInsets.only(top: 24, bottom: 12, left: 24, right: 24),
-      title: Center(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 40, bottom: 20),
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.1,
-            height: MediaQuery.of(context).size.height * 0.1,
-            child: Image.asset(
-              'Assets/Tick mark.png',
-              fit: BoxFit.contain,
-            ),
+      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+      icon: Center(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.2,
+          height: MediaQuery.of(context).size.height * 0.2,
+          child: Image.asset(
+            'Assets/Success.gif',
+            fit: BoxFit.contain,
           ),
         ),
       ),
-      content: Container(
+      title: Container(
         width: MediaQuery.of(context).size.width * 0.4,
-        height: MediaQuery.of(context).size.height * 0.20,
+        height: MediaQuery.of(context).size.height * 0.1,
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             FittedBox(
               fit: BoxFit.scaleDown,
@@ -298,31 +301,43 @@ class _UIScreenState extends State<UIScreen> {
       ),
       actions: [
         Center(
-          child: Container(
-            height: MediaQuery.of(context).size.height * 0.1,
-            width: MediaQuery.of(context).size.width * 0.1,
-            color: Theme.of(context).colorScheme.primary,
-            child: TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                        (Set<MaterialState> states) {
-                      return Theme.of(context).colorScheme.primary;
-                    }),
-                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10), // Add a border for visibility
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 10.0),
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.1,
+              width: MediaQuery.of(context).size.width * 0.1,
+              child: TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Future.delayed(Duration(milliseconds: 10), () {
+                    closeLoadingOverlay(context);
+                  });
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                          (Set<MaterialState> states) {
+                        return Theme.of(context).colorScheme.primary;
+                      }),
+                  /*textStyle: MaterialStateProperty.all(
+                    TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),*/
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10), // Add a border for visibility
+                    ),
                   ),
                 ),
-              ),
-              child: Text(
-                'OK',
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                child: Text(
+                  'OK',
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -330,5 +345,22 @@ class _UIScreenState extends State<UIScreen> {
         ),
       ],
     );
+  }
+
+  void showLoadingOverlay(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+  }
+
+  void closeLoadingOverlay(BuildContext context) {
+    Navigator.of(context).pop();
   }
 }

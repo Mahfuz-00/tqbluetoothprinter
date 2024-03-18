@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Models/models.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://tqueue.touchandsolve.com/api/init';
+  static const String baseUrl = 'https://touch-queue.com/api/init';
 
   Future<Map<String, dynamic>> fetchData() async {
     final response = await http.get(Uri.parse('$baseUrl'));
