@@ -171,7 +171,7 @@ class _UIScreenState extends State<UIScreen> {
                                           showLoadingOverlay(context);
                                         });
                                         final int categoryID = category.id;
-                                        final url = 'https://touch-queue.com/api/create-token?id=$categoryID';
+                                        final url = 'https://www.v2.touch-queue.com/api/create-token?id=$categoryID';
                                         final response = await http.get(Uri.parse(url));
 
                                         if (response.statusCode == 200) {

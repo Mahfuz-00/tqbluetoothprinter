@@ -1,24 +1,16 @@
 class Company {
   final String name;
-  final String email;
-  final String address;
-  final String logo;
 
   Company({
     required this.name,
-    required this.email,
-    required this.address,
-    required this.logo,
   });
 
   factory Company.fromJson(Map<String, dynamic> json) {
     return Company(
       name: json['name'],
-      email: json['email'],
-      address: json['address'],
-      logo: json['logo'],
     );
   }
+}
 //If want to send data to API
 /*  Map<String, dynamic> toJson() {
     return {
@@ -28,7 +20,6 @@ class Company {
       'logo': logo,
     };
   }*/
-}
 
 class Category {
   final int id;
