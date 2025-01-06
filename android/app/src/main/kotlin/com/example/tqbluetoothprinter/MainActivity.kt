@@ -82,7 +82,7 @@ class MainActivity : FlutterActivity() {
                 return false
             } else {
                 val format = PrnStrFormat()
-                format.setTextSize(50);
+                format.setTextSize(40);
                 format.setAli(Layout.Alignment.ALIGN_CENTER);
                 format.setStyle(PrnTextStyle.BOLD);
                 format.setFont(PrnTextFont.CUSTOM);
@@ -111,7 +111,7 @@ class MainActivity : FlutterActivity() {
                 format.setAli(Layout.Alignment.ALIGN_CENTER);
                 format.setStyle(PrnTextStyle.BOLD);
                 format.setFont(PrnTextFont.CUSTOM);
-                mPrinter!!.setPrintAppendString("Developed by Touch and Solve",format);
+                mPrinter!!.setPrintAppendString("Powered by touch-queue.com",format);
                 mPrinter.setPrintAppendString(" ", format);
                 mPrinter!!.setPrintAppendString("Thank You",format);
                 mPrinter.setPrintAppendString(" ", format);
