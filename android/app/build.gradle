@@ -48,8 +48,8 @@ android {
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
+        versionCode 1
+        versionName "0.3"
     }
 
     buildTypes {
@@ -59,6 +59,12 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
+            android.applicationVariants.all { variant ->
+                variant.outputs.all {
+                    //outputFileName = "npo-final-v${versionCode}($versionName).apk"
+                    outputFileName = "TouchQueue-Z100-v${variant.versionCode}.${variant.versionName}.apk"
+                }
+            }
         }
     }
 }
