@@ -29,7 +29,6 @@ class MainActivity : FlutterActivity() {
         GeneratedPluginRegistrant.registerWith(flutterEngine)
 
 
-
         var methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "ZCSPOSSDK")
         methodChannel.setMethodCallHandler { call, result ->
             when (call.method) {
@@ -38,6 +37,7 @@ class MainActivity : FlutterActivity() {
                     var success = initializeSdk()
                     result.success(success)
                 }
+
                 "printReceipt" -> {
                     // Handle print receipt method call
                     var token = call.argument<String>("token")
@@ -45,9 +45,26 @@ class MainActivity : FlutterActivity() {
                     var nameEn = call.argument<String>("nameEn")
                     var nameBn = call.argument<String>("nameBn")
                     var companyName = call.argument<String>("companyName")
-                    var success = printReceipt(token, time, nameEn, nameBn, companyName)
+                    val config = call.argument<Boolean>("config")
+                    val DocEn = call.argument<String>("docName")
+                    val DocBn = call.argument<String>("docNameBn")
+                    val DocDesignation = call.argument<String>("docDesignation")
+                    val DocRoom = call.argument<String>("docRoom")
+                    val success = printReceipt(
+                        token,
+                        time,
+                        nameEn,
+                        nameBn,
+                        companyName,
+                        config,
+                        DocEn,
+                        DocBn,
+                        DocDesignation,
+                        DocRoom
+                    )
                     result.success(success)
                 }
+
                 else -> {
                     result.notImplemented()
                 }
@@ -75,18 +92,49 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun printReceipt(token: String?, time: String?, nameEn: String?, nameBn: String?, companyName: String?): Boolean {
+    private fun printReceipt(
+        token: String?,
+        time: String?,
+        nameEn: String?,
+        nameBn: String?,
+        companyName: String?,
+        config: Boolean?,
+        DocEn: String?,
+        DocBn: String?,
+        DocDesignation: String?,
+        DocRoom: String?
+    ): Boolean {
         try {
             var printStatus: Int = mPrinter!!.getPrinterStatus()
             if (printStatus == SdkResult.SDK_PRN_STATUS_PAPEROUT) {
                 return false
             } else {
                 val format = PrnStrFormat()
-                format.setTextSize(40);
-                format.setAli(Layout.Alignment.ALIGN_CENTER);
-                format.setStyle(PrnTextStyle.BOLD);
-                format.setFont(PrnTextFont.CUSTOM);
-                mPrinter!!.setPrintAppendString("$companyName", format);
+                if (config == false) {
+                    format.setTextSize(40);
+                    format.setAli(Layout.Alignment.ALIGN_CENTER);
+                    format.setStyle(PrnTextStyle.BOLD);
+                    format.setFont(PrnTextFont.CUSTOM);
+                    mPrinter!!.setPrintAppendString("$companyName", format);
+                } else if (config == true) {
+                    format.setTextSize(30);
+                    format.setAli(Layout.Alignment.ALIGN_CENTER);
+                    format.setStyle(PrnTextStyle.BOLD);
+                    format.setFont(PrnTextFont.CUSTOM);
+                    mPrinter!!.setPrintAppendString("$DocEn ($DocBn)", format);
+
+                    format.setTextSize(30);
+                    format.setAli(Layout.Alignment.ALIGN_CENTER);
+                    format.setStyle(PrnTextStyle.BOLD);
+                    format.setFont(PrnTextFont.CUSTOM);
+                    mPrinter!!.setPrintAppendString("$DocDesignation", format);
+
+                    format.setTextSize(30);
+                    format.setAli(Layout.Alignment.ALIGN_CENTER);
+                    format.setStyle(PrnTextStyle.BOLD);
+                    format.setFont(PrnTextFont.CUSTOM);
+                    mPrinter!!.setPrintAppendString("Room No (রুম নং): $DocRoom", format);
+                }
                 format.setTextSize(100);
                 format.setAli(Layout.Alignment.ALIGN_CENTER);
                 format.setStyle(PrnTextStyle.BOLD);
@@ -107,13 +155,15 @@ class MainActivity : FlutterActivity() {
                 format.setStyle(PrnTextStyle.BOLD);
                 format.setFont(PrnTextFont.CUSTOM);
                 mPrinter!!.setPrintAppendString("$nameBn", format);
+                mPrinter.setPrintAppendString(" ", format);
+                mPrinter.setPrintAppendString(" ", format);
                 format.setTextSize(25);
                 format.setAli(Layout.Alignment.ALIGN_CENTER);
                 format.setStyle(PrnTextStyle.BOLD);
                 format.setFont(PrnTextFont.CUSTOM);
-                mPrinter!!.setPrintAppendString("Powered by touch-queue.com",format);
+                mPrinter!!.setPrintAppendString("Powered by touch-queue.com", format);
                 mPrinter.setPrintAppendString(" ", format);
-                mPrinter!!.setPrintAppendString("Thank You",format);
+                mPrinter!!.setPrintAppendString("Thank You", format);
                 mPrinter.setPrintAppendString(" ", format);
                 mPrinter.setPrintAppendString(" ", format);
                 mPrinter.setPrintAppendString(" ", format);

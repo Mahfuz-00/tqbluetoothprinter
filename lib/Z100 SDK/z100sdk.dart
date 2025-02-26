@@ -13,7 +13,7 @@ class ZCSPosSdk {
     }
   }
 
-  Future<bool> printReceipt(BuildContext context, String token, String time, String nameEn, String nameBn, String companyName) async {
+  Future<bool> printReceipt(BuildContext context, String token, String time, String nameEn, String nameBn, String companyName, bool config, String? docName, String? docNameBn, String? docDesignation, String? docRoom) async {
     try {
       await _channel..invokeMethod('printReceipt', {
         'token': token,
@@ -21,6 +21,11 @@ class ZCSPosSdk {
         'nameEn': nameEn,
         'nameBn': nameBn,
         'companyName': companyName,
+        'config': config,
+        'docName': docName,
+        'docNameBn': docNameBn,
+        'docDesignation': docDesignation,
+        'docRoom': docRoom,
       });
       return true;
     } catch (e) {

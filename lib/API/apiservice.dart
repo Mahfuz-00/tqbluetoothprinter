@@ -5,8 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Models/models.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://touch-queue.com/api/init';
-  final String authToken = '16253100c9ba119436b8089c338cb86cf420a51c4ed4bb0626dcbac295b2fd66';
+  static const String baseUrl = 'https://tq-test.alhadiexpress.com.bd/api/init';
+  final String authToken = 'f80222b0fd806104411f2c27782da05e63fe265209b2988b69770e7eaa60eacd';
 
   Future<Map<String, dynamic>> fetchData() async {
     final response = await http.get(Uri.parse('$baseUrl'), headers: {'Authorization': '$authToken'});
@@ -17,9 +17,10 @@ class ApiService {
       print(data);
       final company = await fetchCompanyData();
       final categories = await fetchCategories();
+      final config = await fetchConfigData();
       print(company);
       print(categories);
-      return {'categories': categories, 'company': company};
+      return {'categories': categories, 'company': company, 'config': config};
     } else {
       print('Failed to fetch data: ${response.statusCode}');
       throw Exception('Failed to fetch data');
@@ -52,6 +53,18 @@ class ApiService {
     } else {
       print('Failed to fetch company data: ${response.statusCode}');
       throw Exception('Failed to fetch company data');
+    }
+  }
+
+  Future<Map<String, dynamic>?>fetchConfigData() async {
+    final response = await http.get(Uri.parse('$baseUrl'), headers: {'Authorization': '$authToken'});
+    if(response.statusCode == 200){
+      print('Fetched config data: ${response.statusCode}');
+      final data = json.decode(response.body);
+      return data['config'];
+    }else{
+      print('Failed to fetch config data: ${response.statusCode}');
+      throw Exception('Failed to fetch config data');
     }
   }
 }
