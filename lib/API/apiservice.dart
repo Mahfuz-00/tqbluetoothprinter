@@ -3,10 +3,11 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Models/models.dart';
+import '../constant/url_and_token.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://tq-test.alhadiexpress.com.bd/api/init';
-  final String authToken = 'f80222b0fd806104411f2c27782da05e63fe265209b2988b69770e7eaa60eacd';
+  static String baseUrl = '${URLs().Basepath}/api/init';
+  final String authToken = URLs().token;
 
   Future<Map<String, dynamic>> fetchData() async {
     final response = await http.get(Uri.parse('$baseUrl'), headers: {'Authorization': '$authToken'});
