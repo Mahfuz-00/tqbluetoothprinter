@@ -15,12 +15,13 @@ class ApiService {
     if (response.statusCode == 200) {
       print('Fetched data: ${response.statusCode}');
       final data = json.decode(response.body);
-      print(data);
+      print('Fetched: $data');
       final company = await fetchCompanyData();
       final categories = await fetchCategories();
       final config = await fetchConfigData();
-      print(company);
-      print(categories);
+      print('Company : $company');
+      print('Categories: $categories');
+      print('Config : $config');
       return {'categories': categories, 'company': company, 'config': config};
     } else {
       print('Failed to fetch data: ${response.statusCode}');

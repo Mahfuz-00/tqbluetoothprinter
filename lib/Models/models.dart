@@ -42,13 +42,13 @@ class Category {
 
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
-      id: json['id'],
-      nameEn: json['name_en'],
-      nameBn: json['name_bn'],
-      DocBn: json['doctor_name_bn'],
-      DocEn: json['doctor_name_en'],
-      DocDesignation: json['doctor_designation'],
-      DocRoom: json['doctor_room_no'],
+      id: json['id'] ?? '',
+      nameEn: json['name_en'] ?? '',
+      nameBn: json['name_bn'] ?? '',
+      DocBn: json['doctor_name_bn'] ?? '',
+      DocEn: json['doctor_name_en'] ?? '',
+      DocDesignation: json['doctor_designation'] ?? '',
+      DocRoom: json['doctor_room_no'] ?? '',
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:footer/footer.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../API/apiservice.dart';
 import '../Z100 SDK/z100sdk.dart';
@@ -17,16 +18,33 @@ class UIScreen extends StatefulWidget {
   _UIScreenState createState() => _UIScreenState();
 }
 
-class _UIScreenState extends State<UIScreen> {
+class _UIScreenState extends State<UIScreen> /*with WidgetsBindingObserver*/ {
   final ApiService _apiService = ApiService();
   bool isFullScreen = false;
   int isLoadingIndex = -1;
-
+  bool _isButtonEnabled = false;
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  late Future<Map<String, dynamic>> _futureData;
+  String errorMessage = '';
+
+  void _updateButtonState() {
+    setState(() {
+      _isButtonEnabled =
+          nameController.text.isNotEmpty && phoneController.text.isNotEmpty;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+/*    nameController.addListener(_updateButtonState);
+    phoneController.addListener(_updateButtonState);*/
+    _futureData = _apiService.fetchData();
+    WakelockPlus.enable();
+    // WidgetsBinding.instance.addObserver(this);
     initSdk();
   }
 
@@ -148,7 +166,7 @@ class _UIScreenState extends State<UIScreen> {
                       height: screenHeight * 0.05,
                     ),
                     FutureBuilder<Map<String, dynamic>>(
-                      future: _apiService.fetchData(),
+                      future: _futureData,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -178,291 +196,342 @@ class _UIScreenState extends State<UIScreen> {
                                 category.DocDesignation;
                             final String DocRoom = category.DocRoom;
 
-                            return StatefulBuilder(
-                              builder: (context, setState) {
-                                return Column(
-                                  children: [
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                        fixedSize: Size(screenWidth * 0.8,
-                                            screenHeight * 0.1),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5),
-                                        ),
-                                      ),
-                                      onPressed: () async {
-                                        setState(() {
-                                          isLoadingIndex =
-                                              categoriesData.indexOf(category);
-                                          showLoadingOverlay(context);
-                                        });
-                                        final int categoryID = category.id;
-                                        // final String authToken = '16253100c9ba119436b8089c338cb86cf420a51c4ed4bb0626dcbac295b2fd66';
-                                        final String authToken = URLs().token;
-                                        if (shouldDialog == false) {
-                                          final url =
-                                              '${URLs().Basepath}/api/create-token';
-                                          final response = await http
-                                              .post(Uri.parse(url), headers: {
-                                            'Content-Type': 'application/json',
-                                            'Authorization': '$authToken',
-                                          }, body: {
-                                            'id': categoryID,
-                                          });
-                                          if (response.statusCode == 200) {
-                                            final responseData =
-                                                json.decode(response.body);
-                                            print(responseData);
-                                            final data = responseData['data'];
-                                            final Token = data['token'];
-                                            final Time = data['time'];
-                                            print(
-                                                'Token: $Token, Time and Date: $Time');
+                            return Column(
+                              children: [
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    fixedSize: Size(
+                                        screenWidth * 0.8, screenHeight * 0.1),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    setState(() {
+                                      isLoadingIndex =
+                                          categoriesData.indexOf(category);
+                                      showLoadingOverlay(context);
+                                    });
+                                    final int categoryID = category.id;
+                                    // final String authToken = '16253100c9ba119436b8089c338cb86cf420a51c4ed4bb0626dcbac295b2fd66';
+                                    final String authToken = URLs().token;
+                                    if (shouldDialog == false) {
+                                      final url =
+                                          '${URLs().Basepath}/api/create-token';
+                                      final response = await http
+                                          .post(Uri.parse(url), headers: {
+                                        // 'Content-Type': 'application/json',
+                                        'Authorization': '$authToken',
+                                      }, body: {
+                                        'id': categoryID.toString(),
+                                      });
+                                      if (response.statusCode == 200) {
+                                        final responseData =
+                                            json.decode(response.body);
+                                        print(responseData);
+                                        final data = responseData['data'];
+                                        final Token = data['token'];
+                                        final Time = data['time'];
+                                        print(
+                                            'Token: $Token, Time and Date: $Time');
 
-                                            final ZCSPosSdk z100PosSdk =
-                                                ZCSPosSdk();
-                                            await z100PosSdk.printReceipt(
-                                                context,
-                                                '$Token',
-                                                '$Time',
-                                                '$nameEn',
-                                                '$nameBn',
-                                                '$companyName',
-                                                shouldDialog,
-                                                '',
-                                                '',
-                                                '',
-                                                '');
+                                        final ZCSPosSdk z100PosSdk =
+                                            ZCSPosSdk();
+                                        await z100PosSdk.printReceipt(
+                                            context,
+                                            '$Token',
+                                            '$Time',
+                                            '$nameEn',
+                                            '$nameBn',
+                                            '$companyName',
+                                            shouldDialog,
+                                            '',
+                                            '',
+                                            '',
+                                            '');
 
-                                            showDialog(
-                                              context: context,
-                                              barrierDismissible: false,
-                                              builder: (BuildContext context) {
-                                                return Center(
-                                                  child: buildAlertDialog(
-                                                      Token,
-                                                      Time,
-                                                      '$nameEn ($nameBn)'),
-                                                );
-                                              },
+                                        showDialog(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          builder: (BuildContext context) {
+                                            return Center(
+                                              child: buildAlertDialog(Token,
+                                                  Time, '$nameEn ($nameBn)'),
                                             );
+                                          },
+                                        );
 
-                                            setState(() {
-                                              isLoadingIndex = -1;
-                                            });
-                                          } else {
-                                            print(
-                                                'Failed to fetch data: ${response.statusCode}');
-                                          }
-                                        } else if (shouldDialog == true) {
-                                          final TextEditingController
-                                              nameController =
-                                              TextEditingController();
-                                          final TextEditingController
-                                              phoneController =
-                                              TextEditingController();
+                                        setState(() {
+                                          isLoadingIndex = -1;
+                                        });
+                                      } else {
+                                        print(
+                                            'Failed to fetch data: ${response.statusCode}');
+                                      }
+                                    } else if (shouldDialog == true) {
+                                      final scaffoldContext = context;
 
-                                          final scaffoldContext = context;
-
-                                          showDialog(
-                                            context: scaffoldContext,
-                                            barrierDismissible: false,
-                                            builder:
-                                                (BuildContext dialogContext) {
-                                              return AlertDialog(
-                                                title: Text('Enter Details'),
-                                                content: SingleChildScrollView(
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      // TextFormField for Name
-                                                      TextFormField(
-                                                        controller:
-                                                            nameController,
-                                                        decoration: InputDecoration(
-                                                            labelText:
-                                                                'Patient Name (রোগীর নাম)'),
-                                                      ),
-                                                      SizedBox(height: 10),
-                                                      // TextFormField for Phone Number
-                                                      TextFormField(
-                                                        controller:
-                                                            phoneController,
-                                                        decoration: InputDecoration(
-                                                            labelText:
-                                                                'Mobile Number (মোবাইল নম্বর)'),
-                                                        keyboardType:
-                                                            TextInputType.phone,
-                                                      ),
-                                                    ],
+                                      showDialog(
+                                        context: scaffoldContext,
+                                        // barrierDismissible: false,
+                                        builder: (BuildContext dialogContext) {
+                                          return AlertDialog(
+                                            /*  iconPadding:
+                                                    EdgeInsets.only(top: 15),*/
+                                            backgroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            /*   contentPadding:
+                                                    EdgeInsets.symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 30),*/
+                                            title: Container(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.4,
+                                             /*   height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.1,*/
+                                                child: Text(
+                                                  'Enter Details',
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 25,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
-                                                ),
-                                                actions: [
-                                                  // Print Button that triggers the API call and receipt printing
-                                                  ElevatedButton(
-                                                    onPressed: () async {
-                                                      // Store the current context for later use
-                                                      final BuildContext
-                                                          currentContext =
-                                                          context;
-
-                                                      // Close the first dialog
-                                                      Navigator.of(
-                                                              dialogContext)
-                                                          .pop();
-                                                      // Build the API URL
-                                                      final url =
-                                                          '${URLs().Basepath}/api/create-token';
-
-                                                      // Make the POST API call using the values entered by the user
-                                                      final response =
-                                                          await http.post(
-                                                        Uri.parse(url),
-                                                        headers: {
-                                                          'Content-Type':
-                                                              'application/json',
-                                                          'Authorization':
-                                                              '$authToken',
-                                                        },
-                                                        // Encode the body as JSON
-                                                        body: jsonEncode({
-                                                          'name': nameController
-                                                              .text,
-                                                          'id': categoryID,
-                                                          'mobile_number':
-                                                              phoneController
-                                                                  .text,
-                                                        }),
-                                                      );
-                                                      print(
-                                                          'Status Code : ${response.statusCode}');
-                                                      print(
-                                                          'Resposnse BODY: ${response.body}');
-                                                      if (response.statusCode ==
-                                                          200) {
-                                                        final responseData =
-                                                            json.decode(
-                                                                response.body);
-                                                        print(responseData);
-                                                        final data =
-                                                            responseData[
-                                                                'data'];
-                                                        final token =
-                                                            data['token'];
-                                                        final time =
-                                                            data['time'];
-                                                        final categoryName =
-                                                            data['category'];
-                                                        final doctor =
-                                                            data['doctor'];
-                                                        final designation =
-                                                            data['designation'];
-                                                        final room =
-                                                            data['room'];
-                                                        print(
-                                                            'Token: $token, Time and Date: $time, Category: $categoryName, doctor: $doctor, designation: $designation, Room: $room');
-
-                                                        // Print the receipt using SunmiPosSdk
-                                                        final ZCSPosSdk
-                                                            z100PosSdk =
-                                                            ZCSPosSdk();
-                                                        await z100PosSdk
-                                                            .printReceipt(
-                                                                currentContext,
-                                                                '$token',
-                                                                '$time',
-                                                                nameController
-                                                                    .text,
-                                                                '$nameBn',
-                                                                '$companyName',
-                                                                shouldDialog,
-                                                                '$DocEn',
-                                                                '$DocBn',
-                                                                '$DocDesignation',
-                                                                '$DocRoom');
-
-                                                        // Dismiss the dialog after successful printing
-                                                        /*      Navigator.of(dialogContext)
-                                                        .pop();*/
-
-                                                        // Introduce a brief delay before showing the second dialog
-                                                        /*   await Future.delayed(Duration(milliseconds: 100));*/
-
-                                                        // _showCompletionDialog(scaffoldContext, token, time, nameEn, nameBn);
-                                                        showDialog(
-                                                          context: navigatorKey
-                                                              .currentContext!,
-                                                          barrierDismissible:
-                                                              false,
-                                                          builder: (BuildContext
-                                                              context) {
-                                                            return Center(
-                                                              child: buildAlertDialog(
-                                                                  token,
-                                                                  time,
-                                                                  '$nameEn ($nameBn)'),
-                                                            );
-                                                          },
-                                                        );
-
-                                                        setState(() {
-                                                          isLoadingIndex = -1;
-                                                        });
-                                                      } else {
-                                                        print(
-                                                            'Failed to fetch data: ${response.statusCode}');
-                                                        // Optionally, you could show an error message to the user here.
-                                                      }
-                                                    },
-                                                    child: Text('Print'),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        }
-                                      },
-                                      child: shouldDialog
-                                          ? FittedBox(
-                                              fit: BoxFit.scaleDown,
+                                                )),
+                                            content: SingleChildScrollView(
                                               child: Column(
-                                                mainAxisSize: MainAxisSize.min,
+                                                /*mainAxisSize:
+                                                        MainAxisSize.min,*/
                                                 children: [
-                                                  SizedBox(
-                                                    height: 5,
+                                                  // TextFormField for Name
+                                                  TextFormField(
+                                                    controller: nameController,
+                                                    decoration: InputDecoration(
+                                                        labelText:
+                                                            'Patient Name (রোগীর নাম)'),
                                                   ),
-                                                  Text(
-                                                    '$DocEn ($DocBn), $DocDesignation, Room No (রুম নং): $DocRoom',
-                                                    style: TextStyle(
-                                                        fontSize: 25,
-                                                        color: Colors.white),
+                                                  SizedBox(height: 10),
+                                                  // TextFormField for Phone Number
+                                                  TextFormField(
+                                                    controller: phoneController,
+                                                    decoration: InputDecoration(
+                                                        labelText:
+                                                            'Mobile Number (মোবাইল নম্বর)'),
+                                                    keyboardType:
+                                                        TextInputType.phone,
                                                   ),
-                                                  SizedBox(
-                                                    height: 5,
-                                                  ),
-                                                  Text(
-                                                    '$nameEn ($nameBn)',
-                                                    style: const TextStyle(
-                                                      fontSize: 25,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.white,
+                                                  SizedBox(height: 10),
+                                                  if (errorMessage.isNotEmpty)
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(top: 8.0),
+                                                      child: Text(
+                                                        errorMessage,
+                                                        style: const TextStyle(color: Colors.red),
+                                                        textAlign: TextAlign.center,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  SizedBox(
-                                                    height: 5,
-                                                  ),
                                                 ],
                                               ),
-                                            )
-                                          : FittedBox(
-                                              fit: BoxFit.scaleDown,
-                                              child: Text(
+                                            ),
+                                            actions: [
+                                              // Print Button that triggers the API call and receipt printing
+                                              Center(
+                                                child: Container(
+                                                  /*    padding:
+                                                          const EdgeInsets
+                                                              .only(
+                                                              bottom: 10.0),*/
+                                                  height: MediaQuery.of(context)
+                                                          .size
+                                                          .height *
+                                                      0.1,
+                                                  width: MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      0.2,
+                                                  child: ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          Theme.of(context)
+                                                              .colorScheme
+                                                              .primary,
+                                                      primary: Theme.of(context)
+                                                          .primaryColor,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                10.0), // Adjust the radius as needed
+                                                      ),
+                                                    ),
+                                                    onPressed:
+                                                        /*_isButtonEnabled
+                                                                ?*/
+                                                        () async {
+                                                          FocusScope.of(context).unfocus();
+
+                                                          if(nameController.text.isEmpty || phoneController.text.isEmpty){
+                                                            setState(() {
+                                                              errorMessage =
+                                                              'Please fill in all fields (সব তথ্য পূরণ করুন)';
+                                                            });
+                                                          }
+                                                          else{
+
+                                                            setState(() {
+                                                              errorMessage = '';
+                                                            });
+                                                            // Store the current context for later use
+                                                            final BuildContext
+                                                            currentContext =
+                                                                context;
+
+                                                            // Close the first dialog
+                                                            Navigator.of(
+                                                                dialogContext)
+                                                                .pop();
+                                                            // Build the API URL
+                                                            final url =
+                                                                '${URLs().Basepath}/api/create-token';
+
+                                                            // Make the POST API call using the values entered by the user
+                                                            final response =
+                                                            await http.post(
+                                                              Uri.parse(url),
+                                                              headers: {
+                                                                'Content-Type':
+                                                                'application/json',
+                                                                'Authorization':
+                                                                '$authToken',
+                                                              },
+                                                              // Encode the body as JSON
+                                                              body: jsonEncode({
+                                                                'name': nameController
+                                                                    .text,
+                                                                'id': categoryID,
+                                                                'mobile_number':
+                                                                phoneController
+                                                                    .text,
+                                                              }),
+                                                            );
+                                                            print(
+                                                                'Status Code : ${response.statusCode}');
+                                                            print(
+                                                                'Resposnse BODY: ${response.body}');
+                                                            if (response.statusCode ==
+                                                                200) {
+                                                              final responseData =
+                                                              json.decode(
+                                                                  response.body);
+                                                              print(responseData);
+                                                              final data =
+                                                              responseData[
+                                                              'data'];
+                                                              final token =
+                                                              data['token'];
+                                                              final time =
+                                                              data['time'];
+                                                              final categoryName =
+                                                              data['category'];
+                                                              final doctor =
+                                                              data['doctor'];
+                                                              final designation =
+                                                              data['designation'];
+                                                              final room =
+                                                              data['room'];
+                                                              print(
+                                                                  'Token: $token, Time and Date: $time, Category: $categoryName, doctor: $doctor, designation: $designation, Room: $room');
+
+                                                              // Print the receipt using SunmiPosSdk
+                                                              final ZCSPosSdk
+                                                              z100PosSdk =
+                                                              ZCSPosSdk();
+                                                              await z100PosSdk
+                                                                  .printReceipt(
+                                                                  currentContext,
+                                                                  '$token',
+                                                                  '$time',
+                                                                  nameController
+                                                                      .text,
+                                                                  '$nameBn',
+                                                                  '$companyName',
+                                                                  shouldDialog,
+                                                                  '$DocEn',
+                                                                  '$DocBn',
+                                                                  '$DocDesignation',
+                                                                  '$DocRoom');
+
+                                                              // Dismiss the dialog after successful printing
+                                                              /*      Navigator.of(dialogContext)
+                                                            .pop();*/
+
+                                                              // Introduce a brief delay before showing the second dialog
+                                                              /*   await Future.delayed(Duration(milliseconds: 100));*/
+
+                                                              // _showCompletionDialog(scaffoldContext, token, time, nameEn, nameBn);
+                                                              showDialog(
+                                                                context: navigatorKey
+                                                                    .currentContext!,
+                                                                barrierDismissible:
+                                                                false,
+                                                                builder: (BuildContext
+                                                                context) {
+                                                                  return Center(
+                                                                    child: buildAlertDialog(
+                                                                        token,
+                                                                        time,
+                                                                        '$nameEn ($nameBn)'),
+                                                                  );
+                                                                },
+                                                              );
+
+                                                              setState(() {
+                                                                isLoadingIndex = -1;
+                                                              });
+                                                            } else {
+                                                              print(
+                                                                  'Failed to fetch data: ${response.statusCode}');
+                                                              // Optionally, you could show an error message to the user here.
+                                                            }
+                                                          }
+                                                    } /*  : null*/,
+                                                    child: Text(
+                                                      'Print',
+                                                      style: const TextStyle(
+                                                        fontSize: 25,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    }
+                                  },
+                                  child: shouldDialog
+                                      ? FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              Text(
                                                 '$nameEn ($nameBn)',
                                                 style: const TextStyle(
                                                   fontSize: 25,
@@ -470,12 +539,46 @@ class _UIScreenState extends State<UIScreen> {
                                                   color: Colors.white,
                                                 ),
                                               ),
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              Text(
+                                                '$DocEn ($DocBn), $DocDesignation',
+                                                style: const TextStyle(
+                                                  fontSize: 25,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              Text(
+                                                'Room No (রুম নং): $DocRoom',
+                                                style: TextStyle(
+                                                    fontSize: 25,
+                                                    color: Colors.white),
+                                              ),
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: Text(
+                                            '$nameEn ($nameBn)',
+                                            style: const TextStyle(
+                                              fontSize: 25,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
                                             ),
-                                    ),
-                                    SizedBox(height: screenHeight * 0.01),
-                                  ],
-                                );
-                              },
+                                          ),
+                                        ),
+                                ),
+                                SizedBox(height: screenHeight * 0.01),
+                              ],
                             );
                           }).toList(),
                         );
@@ -502,7 +605,8 @@ class _UIScreenState extends State<UIScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text('©Copyright 2024 Touch Queue. All Rights Reserved.'),
+                    Text(
+                        '©Copyright ${DateTime.now().year} Touch Queue. All Rights Reserved.'),
                     SizedBox(
                       width: screenWidth * 0.35,
                     ),
@@ -631,7 +735,7 @@ class _UIScreenState extends State<UIScreen> {
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.5),
-      barrierDismissible: false,
+      // barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return Center(
           child: CircularProgressIndicator(),
