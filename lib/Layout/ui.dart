@@ -10,6 +10,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../API/apiservice.dart';
 import '../Z100 SDK/z100sdk.dart';
 import '../constant/url_and_token.dart';
+import 'enterdetails.dart';
 
 class UIScreen extends StatefulWidget {
   UIScreen({Key? key}) : super(key: key);
@@ -137,7 +138,7 @@ class _UIScreenState extends State<UIScreen> /*with WidgetsBindingObserver*/ {
                           FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
-                              'WELCOME!',
+                              'WELCOME',
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.primary,
                                 fontSize: 30,
@@ -271,6 +272,24 @@ class _UIScreenState extends State<UIScreen> /*with WidgetsBindingObserver*/ {
                                             'Failed to fetch data: ${response.statusCode}');
                                       }
                                     } else if (shouldDialog == true) {
+                                     /* closeLoadingOverlay(context);*/
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                EnterDetailsPage(
+                                              authToken: authToken,
+                                              categoryID: categoryID,
+                                              nameBn: nameBn,
+                                              nameEn: nameEn,
+                                              shouldDialog: shouldDialog,
+                                              DocEn: DocEn,
+                                              DocBn: DocBn,
+                                              DocDesignation: DocDesignation,
+                                              DocRoom: DocRoom,
+                                            ),
+                                          ));
+                                    } /*{
                                       final scaffoldContext = context;
 
                                       showDialog(
@@ -278,26 +297,26 @@ class _UIScreenState extends State<UIScreen> /*with WidgetsBindingObserver*/ {
                                         // barrierDismissible: false,
                                         builder: (BuildContext dialogContext) {
                                           return AlertDialog(
-                                            /*  iconPadding:
-                                                    EdgeInsets.only(top: 15),*/
+                                            */ /*  iconPadding:
+                                                    EdgeInsets.only(top: 15),*/ /*
                                             backgroundColor: Colors.white,
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                             ),
-                                            /*   contentPadding:
+                                            */ /*   contentPadding:
                                                     EdgeInsets.symmetric(
                                                         horizontal: 10,
-                                                        vertical: 30),*/
+                                                        vertical: 30),*/ /*
                                             title: Container(
                                                 width: MediaQuery.of(context)
                                                         .size
                                                         .width *
                                                     0.4,
-                                             /*   height: MediaQuery.of(context)
+                                             */ /*   height: MediaQuery.of(context)
                                                         .size
                                                         .height *
-                                                    0.1,*/
+                                                    0.1,*/ /*
                                                 child: Text(
                                                   'Enter Details',
                                                   style: TextStyle(
@@ -308,8 +327,8 @@ class _UIScreenState extends State<UIScreen> /*with WidgetsBindingObserver*/ {
                                                 )),
                                             content: SingleChildScrollView(
                                               child: Column(
-                                                /*mainAxisSize:
-                                                        MainAxisSize.min,*/
+                                                */ /*mainAxisSize:
+                                                        MainAxisSize.min,*/ /*
                                                 children: [
                                                   // TextFormField for Name
                                                   TextFormField(
@@ -345,10 +364,10 @@ class _UIScreenState extends State<UIScreen> /*with WidgetsBindingObserver*/ {
                                               // Print Button that triggers the API call and receipt printing
                                               Center(
                                                 child: Container(
-                                                  /*    padding:
+                                                  */ /*    padding:
                                                           const EdgeInsets
                                                               .only(
-                                                              bottom: 10.0),*/
+                                                              bottom: 10.0),*/ /*
                                                   height: MediaQuery.of(context)
                                                           .size
                                                           .height *
@@ -374,8 +393,8 @@ class _UIScreenState extends State<UIScreen> /*with WidgetsBindingObserver*/ {
                                                       ),
                                                     ),
                                                     onPressed:
-                                                        /*_isButtonEnabled
-                                                                ?*/
+                                                        */ /*_isButtonEnabled
+                                                                ?*/ /*
                                                         () async {
                                                           FocusScope.of(context).unfocus();
 
@@ -471,11 +490,11 @@ class _UIScreenState extends State<UIScreen> /*with WidgetsBindingObserver*/ {
                                                                   '$DocRoom');
 
                                                               // Dismiss the dialog after successful printing
-                                                              /*      Navigator.of(dialogContext)
-                                                            .pop();*/
+                                                              */ /*      Navigator.of(dialogContext)
+                                                            .pop();*/ /*
 
                                                               // Introduce a brief delay before showing the second dialog
-                                                              /*   await Future.delayed(Duration(milliseconds: 100));*/
+                                                              */ /*   await Future.delayed(Duration(milliseconds: 100));*/ /*
 
                                                               // _showCompletionDialog(scaffoldContext, token, time, nameEn, nameBn);
                                                               showDialog(
@@ -503,7 +522,7 @@ class _UIScreenState extends State<UIScreen> /*with WidgetsBindingObserver*/ {
                                                               // Optionally, you could show an error message to the user here.
                                                             }
                                                           }
-                                                    } /*  : null*/,
+                                                    } */ /*  : null*/ /*,
                                                     child: Text(
                                                       'Print',
                                                       style: const TextStyle(
@@ -520,7 +539,7 @@ class _UIScreenState extends State<UIScreen> /*with WidgetsBindingObserver*/ {
                                           );
                                         },
                                       );
-                                    }
+                                    }*/
                                   },
                                   child: shouldDialog
                                       ? FittedBox(
