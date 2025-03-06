@@ -1,4 +1,4 @@
 class URLs{
   final String Basepath = 'http://touch-queue.com';
-  final String token = '7edb8a64b58e742d3dc814cd2a48238ee888ffc24d7160200f8609e2fb78d946';
+  final String token = '16253100c9ba119436b8089c338cb86cf420a51c4ed4bb0626dcbac295b2fd66';
 }
