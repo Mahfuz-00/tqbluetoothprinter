@@ -22,10 +22,13 @@ class _UIScreenState extends State<UIScreen> {
   int isLoadingIndex = -1;
 
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  late Future<Map<String, dynamic>> _futureData;
+
 
   @override
   void initState() {
     super.initState();
+    _futureData = _apiService.fetchData();
     initSdk();
   }
 
@@ -146,7 +149,7 @@ class _UIScreenState extends State<UIScreen> {
                     height: screenHeight * 0.05,
                   ),
                   FutureBuilder<Map<String, dynamic>>(
-                    future: _apiService.fetchData(),
+                    future: _futureData,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
@@ -194,11 +197,12 @@ class _UIScreenState extends State<UIScreen> {
                                       });
                                       final int categoryID = category.id;
                                       // final String authToken = '16253100c9ba119436b8089c338cb86cf420a51c4ed4bb0626dcbac295b2fd66';
-                                      final String authToken =
-                                          'f80222b0fd806104411f2c27782da05e63fe265209b2988b69770e7eaa60eacd';
+                                      final String authToken = URLs().token;
+                                      // final String authToken = 'f80222b0fd806104411f2c27782da05e63fe265209b2988b69770e7eaa60eacd';
                                       if (shouldDialog == false) {
-                                        final url =
-                                            'https://tq-test.alhadiexpress.com.bd/api/create-token';
+                                        // final url = 'https://tq-test.alhadiexpress.com.bd/api/create-token';
+                                        final url = '${URLs().Basepath}/api/create-token';
+
                                         final response = await http
                                             .post(Uri.parse(url), headers: {
                                           'Content-Type': 'application/json',
@@ -297,8 +301,8 @@ class _UIScreenState extends State<UIScreen> {
                                                     // Close the first dialog
                                                     Navigator.of(dialogContext).pop();
                                                     // Build the API URL
-                                                    final url =
-                                                        'https://tq-test.alhadiexpress.com.bd/api/create-token';
+                                                    // final url = 'https://tq-test.alhadiexpress.com.bd/api/create-token';
+                                                    final url = '${URLs().Basepath}/api/create-token';
 
                                                     // Make the POST API call using the values entered by the user
                                                     final response =
