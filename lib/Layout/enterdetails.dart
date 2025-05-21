@@ -172,7 +172,7 @@ class _EnterDetailsPageState extends State<EnterDetailsPage> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
-                    primary: Theme.of(context).primaryColor,
+                    // primary: Theme.of(context).primaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
                           10.0), // Adjust the radius as needed
