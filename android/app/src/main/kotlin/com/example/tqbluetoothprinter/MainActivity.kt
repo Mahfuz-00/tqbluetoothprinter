@@ -161,7 +161,7 @@ class MainActivity : FlutterActivity() {
                 format.setAli(Layout.Alignment.ALIGN_CENTER);
                 format.setStyle(PrnTextStyle.BOLD);
                 format.setFont(PrnTextFont.CUSTOM);
-                mPrinter!!.setPrintAppendString("Powered by touch-queue.com", format);
+                mPrinter!!.setPrintAppendString("Powered by Banglalink", format);
                 mPrinter.setPrintAppendString(" ", format);
                 mPrinter!!.setPrintAppendString("Thank You", format);
                 mPrinter.setPrintAppendString(" ", format);
